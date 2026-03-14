@@ -40,12 +40,6 @@ const DAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'] as co
 type Day = typeof DAYS[number]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function quizId(quiz: QuizData): string {
-  const str = quiz.title + quiz.questions.length
-  let h = 0
-  for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0
-  return Math.abs(h).toString(36).slice(0, 8)
-}
 async function saveScore(id: string, entry: RankingEntry) {
   await saveScoreRemote({ quiz_id: id, player_name: entry.name, score: entry.score, total: entry.total })
 }
@@ -242,11 +236,11 @@ function LoadingScreen() {
 }
 
 // ─── Host Screen ──────────────────────────────────────────────────────────────
-function HostScreen({ quiz, quizUrl, onBack }: {
-  quiz: QuizData; quizUrl: string; onBack: () => void
+function HostScreen({ quiz, quizUrl, qId, onBack }: {
+  quiz: QuizData; quizUrl: string; qId: string; onBack: () => void
 }) {
   const [copied, setCopied] = useState(false)
-  const id = quizId(quiz)
+  const id = qId
   const [scores, setScores] = useState<RankingEntry[]>([])
 
   useEffect(() => {
@@ -625,6 +619,7 @@ export default function QuizApp() {
   const [dayTexts, setDayTexts] = useState<Record<Day, string>>(emptyDayTexts)
   const [quiz, setQuiz] = useState<QuizData | null>(null)
   const [quizUrl, setQuizUrl] = useState('')
+  const [qId, setQId] = useState('')
   const [playerName, setPlayerName] = useState('')
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
@@ -637,6 +632,7 @@ export default function QuizApp() {
     const id = params.get('id')
     if (id) {
       setIsGuest(true)
+      setQId(id)
       getQuizRemote(id).then((data) => {
         if (data) { setQuiz(data as QuizData); setAppState('name') }
       })
@@ -664,6 +660,7 @@ export default function QuizApp() {
       const url = `${window.location.origin}${window.location.pathname}?id=${id}`
       setQuiz(data)
       setQuizUrl(url)
+      setQId(id)
       setAppState('host')
     } catch (err) {
       let msg = 'Erro ao gerar o quiz. Tente novamente.'
@@ -691,13 +688,12 @@ export default function QuizApp() {
     const isLast = currentQuestion + 1 >= quiz.questions.length
     if (isLast) {
       const finalScore = correct ? score + 1 : score
-      const id = quizId(quiz)
-      saveScore(id, { name: playerName, score: finalScore, total: quiz.questions.length, timestamp: Date.now() })
+      saveScore(qId, { name: playerName, score: finalScore, total: quiz.questions.length, timestamp: Date.now() })
       setTimeout(() => setAppState('result'), 300)
     } else {
       setTimeout(() => setCurrentQuestion((q) => q + 1), 300)
     }
-  }, [currentQuestion, quiz, score, playerName])
+  }, [currentQuestion, quiz, score, playerName, qId])
 
   const handleRestart = useCallback(() => {
     setAppState('input')
@@ -705,6 +701,7 @@ export default function QuizApp() {
     setScore(0)
     setQuiz(null)
     setQuizUrl('')
+    setQId('')
     setPlayerName('')
     setError(null)
     window.history.replaceState({}, '', window.location.pathname)
@@ -727,7 +724,7 @@ export default function QuizApp() {
             )}
             {appState === 'loading' && <LoadingScreen key="loading" />}
             {appState === 'host' && quiz && (
-              <HostScreen key="host" quiz={quiz} quizUrl={quizUrl}
+              <HostScreen key="host" quiz={quiz} quizUrl={quizUrl} qId={qId}
                 onBack={() => setAppState('input')} />
             )}
             {appState === 'name' && quiz && (
@@ -739,7 +736,7 @@ export default function QuizApp() {
             )}
             {appState === 'result' && quiz && (
               <ResultScreen key="result" score={score} total={quiz.questions.length}
-                quiz={quiz} playerName={playerName} qId={quizId(quiz)} isGuest={isGuest} onRestart={handleRestart} />
+                quiz={quiz} playerName={playerName} qId={qId} isGuest={isGuest} onRestart={handleRestart} />
             )}
           </AnimatePresence>
         </div>
