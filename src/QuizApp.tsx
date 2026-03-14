@@ -2,8 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Anthropic from '@anthropic-ai/sdk'
 import { QRCodeSVG } from 'qrcode.react'
-import LZString from 'lz-string'
-import { saveScoreRemote, getScoresRemote } from './supabase'
+import { saveScoreRemote, getScoresRemote, saveQuizRemote, getQuizRemote } from './supabase'
 import {
   FileText,
   Sparkle,
@@ -41,15 +40,6 @@ const DAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'] as co
 type Day = typeof DAYS[number]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function encodeQuiz(quiz: QuizData): string {
-  return LZString.compressToEncodedURIComponent(JSON.stringify(quiz))
-}
-function decodeQuiz(encoded: string): QuizData | null {
-  try {
-    const raw = LZString.decompressFromEncodedURIComponent(encoded)
-    return raw ? (JSON.parse(raw) as QuizData) : null
-  } catch { return null }
-}
 function quizId(quiz: QuizData): string {
   const str = quiz.title + quiz.questions.length
   let h = 0
@@ -636,10 +626,11 @@ export default function QuizApp() {
   // On load: check URL for shared quiz
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const encoded = params.get('q')
-    if (encoded) {
-      const decoded = decodeQuiz(encoded)
-      if (decoded) { setQuiz(decoded); setAppState('name') }
+    const id = params.get('id')
+    if (id) {
+      getQuizRemote(id).then((data) => {
+        if (data) { setQuiz(data as QuizData); setAppState('name') }
+      })
     }
   }, [])
 
@@ -660,8 +651,8 @@ export default function QuizApp() {
 
     try {
       const data = await generateQuizFromText(combined)
-      const encoded = encodeQuiz(data)
-      const url = `${window.location.origin}${window.location.pathname}?q=${encoded}`
+      const id = await saveQuizRemote(data)
+      const url = `${window.location.origin}${window.location.pathname}?id=${id}`
       setQuiz(data)
       setQuizUrl(url)
       setAppState('host')

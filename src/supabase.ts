@@ -5,6 +5,26 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 export const supabase = url && key ? createClient(url, key) : null
 
+// ─── Quizzes ─────────────────────────────────────────────────────────────────
+function shortId(): string {
+  return Math.random().toString(36).slice(2, 10)
+}
+
+export async function saveQuizRemote(data: object): Promise<string> {
+  const id = shortId()
+  if (supabase) {
+    await supabase.from('quizzes').insert({ id, data })
+  }
+  return id
+}
+
+export async function getQuizRemote(id: string): Promise<object | null> {
+  if (!supabase) return null
+  const { data } = await supabase.from('quizzes').select('data').eq('id', id).single()
+  return data?.data ?? null
+}
+
+// ─── Rankings ─────────────────────────────────────────────────────────────────
 export interface RankingRow {
   id?: string
   quiz_id: string
