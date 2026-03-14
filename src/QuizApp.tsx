@@ -202,7 +202,7 @@ function InputScreen({ dayTexts, onTextChange, onGenerate, error }: {
           disabled={!anyFilled || anyOverLimit}
           className="w-full flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_12px_rgba(194,65,12,0.25)] text-base">
           <Sparkle size={17} weight="fill" />
-          Gerar Quiz da Semana
+          Gerar quiz da semana
         </motion.button>
         <p className="text-center text-xs text-gray-300">
           {anyFilled
@@ -242,14 +242,13 @@ function LoadingScreen() {
 }
 
 // ─── Host Screen ──────────────────────────────────────────────────────────────
-function HostScreen({ quiz, quizUrl, onStart, onBack }: {
-  quiz: QuizData; quizUrl: string; onStart: () => void; onBack: () => void
+function HostScreen({ quiz, quizUrl, onBack }: {
+  quiz: QuizData; quizUrl: string; onBack: () => void
 }) {
   const [copied, setCopied] = useState(false)
   const id = quizId(quiz)
   const [scores, setScores] = useState<RankingEntry[]>([])
 
-  // Poll for new scores every 3s
   useEffect(() => {
     getScores(id).then(setScores)
     const interval = setInterval(() => getScores(id).then(setScores), 3000)
@@ -272,18 +271,18 @@ function HostScreen({ quiz, quizUrl, onStart, onBack }: {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-50 mb-4">
           <QrCode size={26} weight="light" className="text-orange-700" />
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Quiz Pronto!</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Quiz pronto!</h2>
         <p className="text-gray-400 text-base">{quiz.title}</p>
       </div>
 
       {/* QR Code */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.05)] p-8 flex flex-col items-center mb-4">
-        <div className="p-4 bg-white rounded-2xl border-2 border-orange-100 mb-5">
-          <QRCodeSVG value={quizUrl} size={200} fgColor="#9a3412" bgColor="#ffffff"
+        <div className="p-5 bg-orange-700 rounded-2xl mb-5">
+          <QRCodeSVG value={quizUrl} size={200} fgColor="#ffffff" bgColor="#c2410c"
             level="M" includeMargin={false} />
         </div>
         <p className="text-sm text-gray-400 mb-3 text-center">
-          Escaneie para acessar o quiz em outro dispositivo
+          Compartilhe o QR code — só quem escanear pode responder
         </p>
         <div className="flex items-center gap-2 w-full max-w-sm">
           <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-xs text-gray-400 truncate font-mono">
@@ -298,18 +297,22 @@ function HostScreen({ quiz, quizUrl, onStart, onBack }: {
       </div>
 
       {/* Ranking ao vivo */}
-      {sorted.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.05)] overflow-hidden mb-4">
-          <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
-            <Trophy size={15} weight="light" className="text-orange-600" />
-            <span className="text-sm font-medium text-gray-700">Ranking ao vivo</span>
-            <span className="text-xs text-gray-300 ml-auto">{sorted.length} participante(s)</span>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.05)] overflow-hidden mb-4">
+        <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
+          <Trophy size={15} weight="light" className="text-orange-600" />
+          <span className="text-sm font-medium text-gray-700">Ranking ao vivo</span>
+          <span className="text-xs text-gray-300 ml-auto">{sorted.length} participante(s)</span>
+        </div>
+        {sorted.length === 0 ? (
+          <div className="px-6 py-8 text-center text-sm text-gray-300">
+            Aguardando participantes...
           </div>
+        ) : (
           <div className="divide-y divide-gray-50">
             {sorted.slice(0, 10).map((e, i) => (
               <div key={i} className="flex items-center gap-3 px-6 py-3">
-                <span className={`text-xs font-bold w-5 text-center ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-gray-400' : i === 2 ? 'text-amber-700' : 'text-gray-300'}`}>
-                  {i + 1}
+                <span className="text-sm w-6 text-center">
+                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
                 </span>
                 <span className="flex-1 text-sm text-gray-700">{e.name}</span>
                 <span className="text-sm font-medium text-orange-700">{e.score}/{e.total}</span>
@@ -317,21 +320,14 @@ function HostScreen({ quiz, quizUrl, onStart, onBack }: {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      <div className="flex gap-3">
-        <button onClick={onBack}
-          className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium transition-colors">
-          <ArrowCounterClockwise size={14} weight="light" />
-          Editar
-        </button>
-        <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onStart}
-          className="flex-1 flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_12px_rgba(194,65,12,0.25)] text-base">
-          <ArrowRight size={17} weight="bold" />
-          Fazer o Quiz
-        </motion.button>
+        )}
       </div>
+
+      <button onClick={onBack}
+        className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium transition-colors">
+        <ArrowCounterClockwise size={14} weight="light" />
+        Editar quiz
+      </button>
     </motion.div>
   )
 }
@@ -367,7 +363,7 @@ function NameScreen({ quiz, onStart }: { quiz: QuizData; onStart: (name: string)
         disabled={!name.trim()}
         className="w-full flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_12px_rgba(194,65,12,0.25)] text-base">
         <ArrowRight size={17} weight="bold" />
-        Começar Quiz
+        Começar quiz
       </motion.button>
     </motion.div>
   )
@@ -380,10 +376,17 @@ function QuestionCard({ question, index, total, onAnswer }: {
   const [selected, setSelected] = useState<string | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasAnswered = useRef(false)
 
   useEffect(() => {
     if (countdown === null) return
-    if (countdown === 0) { onAnswer(selected === question.correctId); return }
+    if (countdown === 0) {
+      if (!hasAnswered.current) {
+        hasAnswered.current = true
+        onAnswer(selected === question.correctId)
+      }
+      return
+    }
     timerRef.current = setTimeout(() => setCountdown((c) => (c ?? 1) - 1), 1000)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [countdown, selected, question.correctId, onAnswer])
@@ -395,6 +398,8 @@ function QuestionCard({ question, index, total, onAnswer }: {
   }
 
   const handleSkip = () => {
+    if (hasAnswered.current) return
+    hasAnswered.current = true
     if (timerRef.current) clearTimeout(timerRef.current)
     onAnswer(selected === question.correctId)
   }
@@ -522,7 +527,7 @@ function ResultScreen({ score, total, quiz, playerName, qId, onRestart }: {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-50 mb-4">
           <Trophy size={24} weight="light" className="text-amber-500" />
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Quiz Concluído!</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Quiz concluído!</h2>
         <p className="text-base text-gray-500 mb-1">{playerName}</p>
         <p className="text-sm text-gray-300 mb-6">{quiz.title}</p>
 
@@ -564,7 +569,7 @@ function ResultScreen({ score, total, quiz, playerName, qId, onRestart }: {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
             <Crown size={15} weight="fill" className="text-amber-500" />
-            <span className="text-sm font-medium text-gray-700">Ranking Geral</span>
+            <span className="text-sm font-medium text-gray-700">Ranking geral</span>
             <span className="text-xs text-gray-300 ml-auto">{sorted.length} participante(s)</span>
           </div>
           <div className="divide-y divide-gray-50">
@@ -599,7 +604,7 @@ function ResultScreen({ score, total, quiz, playerName, qId, onRestart }: {
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onRestart}
           className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium py-4 rounded-2xl border border-gray-200 transition-colors">
           <ArrowCounterClockwise size={14} weight="light" />
-          Novo Quiz
+          Novo quiz
         </motion.button>
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={handleCopyMarkdown}
           className="flex-1 flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_8px_rgba(194,65,12,0.25)]">
@@ -668,8 +673,6 @@ export default function QuizApp() {
     }
   }, [dayTexts])
 
-  const handleStartFromHost = useCallback(() => setAppState('name'), [])
-
   const handleStartQuiz = useCallback((name: string) => {
     setPlayerName(name)
     setCurrentQuestion(0)
@@ -721,16 +724,14 @@ export default function QuizApp() {
             {appState === 'loading' && <LoadingScreen key="loading" />}
             {appState === 'host' && quiz && (
               <HostScreen key="host" quiz={quiz} quizUrl={quizUrl}
-                onStart={handleStartFromHost} onBack={() => setAppState('input')} />
+                onBack={() => setAppState('input')} />
             )}
             {appState === 'name' && quiz && (
               <NameScreen key="name" quiz={quiz} onStart={handleStartQuiz} />
             )}
             {appState === 'quiz' && quiz && (
-              <AnimatePresence mode="wait">
-                <QuestionCard key={currentQuestion} question={quiz.questions[currentQuestion]}
-                  index={currentQuestion} total={quiz.questions.length} onAnswer={handleAnswer} />
-              </AnimatePresence>
+              <QuestionCard key={currentQuestion} question={quiz.questions[currentQuestion]}
+                index={currentQuestion} total={quiz.questions.length} onAnswer={handleAnswer} />
             )}
             {appState === 'result' && quiz && (
               <ResultScreen key="result" score={score} total={quiz.questions.length}
