@@ -271,8 +271,8 @@ function HostScreen({ quiz, quizUrl, qId, onBack }: {
 
       {/* QR Code */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.05)] p-8 flex flex-col items-center mb-4">
-        <div className="p-5 bg-orange-700 rounded-2xl mb-5">
-          <QRCodeSVG value={quizUrl} size={200} fgColor="#ffffff" bgColor="#c2410c"
+        <div className="p-3 bg-white rounded-2xl border border-gray-200 mb-5">
+          <QRCodeSVG value={quizUrl} size={200} fgColor="#1f2937" bgColor="#ffffff"
             level="M" includeMargin={false} />
         </div>
         <p className="text-sm text-gray-400 mb-3 text-center">
@@ -517,7 +517,7 @@ function ResultScreen({ score, total, quiz, playerName, qId, isGuest, onRestart 
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }} className="w-full max-w-2xl mx-auto space-y-4">
 
       {/* Personal Score */}
-      <div className="bg-white rounded-2xl p-8 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100 text-center">
+      <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100 text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-50 mb-4">
           <Trophy size={24} weight="light" className="text-amber-500" />
         </div>
@@ -525,23 +525,23 @@ function ResultScreen({ score, total, quiz, playerName, qId, isGuest, onRestart 
         <p className="text-base text-gray-500 mb-1">{playerName}</p>
         <p className="text-sm text-gray-300 mb-6">{quiz.title}</p>
 
-        <div className="flex items-center justify-center gap-10 mb-6">
-          <div className="text-center">
-            <div className="text-4xl font-light text-gray-800 tabular-nums">
-              {score}<span className="text-lg text-gray-300">/{total}</span>
+        <div className="flex items-center justify-center gap-5 sm:gap-10 mb-6">
+          <div className="text-center shrink-0">
+            <div className="text-3xl sm:text-4xl font-light text-gray-800 tabular-nums">
+              {score}<span className="text-base sm:text-lg text-gray-300">/{total}</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">acertos</div>
           </div>
-          <div className="w-px h-10 bg-gray-100" />
-          <div className="text-center">
-            <div className="text-4xl font-light text-gray-800 tabular-nums">
-              {pct}<span className="text-lg text-gray-300">%</span>
+          <div className="w-px h-10 bg-gray-100 shrink-0" />
+          <div className="text-center shrink-0">
+            <div className="text-3xl sm:text-4xl font-light text-gray-800 tabular-nums">
+              {pct}<span className="text-base sm:text-lg text-gray-300">%</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">aproveitamento</div>
           </div>
-          <div className="w-px h-10 bg-gray-100" />
-          <div className={`text-center px-3 py-1 rounded-full ${grade.bg}`}>
-            <div className={`text-sm font-medium ${grade.color}`}>{grade.label}</div>
+          <div className="w-px h-10 bg-gray-100 shrink-0" />
+          <div className={`text-center px-3 py-1 rounded-full shrink-0 ${grade.bg}`}>
+            <div className={`text-xs sm:text-sm font-medium whitespace-nowrap ${grade.color}`}>{grade.label}</div>
           </div>
         </div>
 
@@ -576,11 +576,11 @@ function ResultScreen({ score, total, quiz, playerName, qId, isGuest, onRestart 
                   <span className={`text-sm font-bold w-6 text-center ${medalColor(i)}`}>
                     {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
                   </span>
-                  <span className={`flex-1 text-sm ${isMe ? 'font-semibold text-orange-800' : 'text-gray-700'}`}>
-                    {e.name} {isMe && <span className="text-xs font-normal text-orange-400">(você)</span>}
+                  <span className={`flex-1 min-w-0 text-sm truncate ${isMe ? 'font-semibold text-orange-800' : 'text-gray-700'}`}>
+                    {e.name} {isMe && <span className="text-xs font-normal text-orange-400 whitespace-nowrap">(você)</span>}
                   </span>
-                  <span className="text-sm font-medium text-gray-700">{e.score}/{e.total}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  <span className="text-sm font-medium text-gray-700 shrink-0">{e.score}/{e.total}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
                     Math.round((e.score / e.total) * 100) >= 85 ? 'bg-emerald-50 text-emerald-600' :
                     Math.round((e.score / e.total) * 100) >= 60 ? 'bg-blue-50 text-blue-600' :
                     'bg-gray-50 text-gray-400'}`}>
@@ -597,13 +597,13 @@ function ResultScreen({ score, total, quiz, playerName, qId, isGuest, onRestart 
       <div className="flex gap-3">
         {!isGuest && (
           <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onRestart}
-            className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium py-4 rounded-2xl border border-gray-200 transition-colors">
+            className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium py-4 rounded-2xl border border-gray-200 transition-colors whitespace-nowrap">
             <ArrowCounterClockwise size={14} weight="light" />
             Novo quiz
           </motion.button>
         )}
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={handleCopyMarkdown}
-          className="flex-1 flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_8px_rgba(194,65,12,0.25)]">
+          className="flex-1 flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_8px_rgba(194,65,12,0.25)] whitespace-nowrap">
           {copied ? <><CheckCircle size={14} weight="fill" />Copiado!</> : <><Copy size={14} weight="light" />Copiar em Markdown</>}
         </motion.button>
       </div>
