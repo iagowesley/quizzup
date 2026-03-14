@@ -486,8 +486,8 @@ function QuestionCard({ question, index, total, onAnswer }: {
 }
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
-function ResultScreen({ score, total, quiz, playerName, qId, onRestart }: {
-  score: number; total: number; quiz: QuizData; playerName: string; qId: string; onRestart: () => void
+function ResultScreen({ score, total, quiz, playerName, qId, isGuest, onRestart }: {
+  score: number; total: number; quiz: QuizData; playerName: string; qId: string; isGuest: boolean; onRestart: () => void
 }) {
   const [copied, setCopied] = useState(false)
   const pct = Math.round((score / total) * 100)
@@ -601,11 +601,13 @@ function ResultScreen({ score, total, quiz, playerName, qId, onRestart }: {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onRestart}
-          className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium py-4 rounded-2xl border border-gray-200 transition-colors">
-          <ArrowCounterClockwise size={14} weight="light" />
-          Novo quiz
-        </motion.button>
+        {!isGuest && (
+          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={onRestart}
+            className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium py-4 rounded-2xl border border-gray-200 transition-colors">
+            <ArrowCounterClockwise size={14} weight="light" />
+            Novo quiz
+          </motion.button>
+        )}
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={handleCopyMarkdown}
           className="flex-1 flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-4 rounded-2xl transition-colors shadow-[0_2px_8px_rgba(194,65,12,0.25)]">
           {copied ? <><CheckCircle size={14} weight="fill" />Copiado!</> : <><Copy size={14} weight="light" />Copiar em Markdown</>}
@@ -627,12 +629,14 @@ export default function QuizApp() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [isGuest, setIsGuest] = useState(false)
 
   // On load: check URL for shared quiz
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('id')
     if (id) {
+      setIsGuest(true)
       getQuizRemote(id).then((data) => {
         if (data) { setQuiz(data as QuizData); setAppState('name') }
       })
@@ -735,7 +739,7 @@ export default function QuizApp() {
             )}
             {appState === 'result' && quiz && (
               <ResultScreen key="result" score={score} total={quiz.questions.length}
-                quiz={quiz} playerName={playerName} qId={quizId(quiz)} onRestart={handleRestart} />
+                quiz={quiz} playerName={playerName} qId={quizId(quiz)} isGuest={isGuest} onRestart={handleRestart} />
             )}
           </AnimatePresence>
         </div>
